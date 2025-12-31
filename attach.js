@@ -44,11 +44,33 @@
     }
   };
 
+  const parseRound = (roundStr) => {
+    roundStr = roundStr.trim();
+    
+    if (/^\d/.test(roundStr)) {
+      const num = parseInt(roundStr);
+      return num - 1;
+    }
+    
+    if (WIND.some(w => roundStr.startsWith(w + " "))) {
+      const wind = WIND.find(w => roundStr.startsWith(w + " "));
+      const num = parseInt(roundStr.slice(wind.length).trim()) - 1;
+      return WIND.findIndex((x) => x === wind) * 4 + num;
+    }
+    
+    if (roundStr.length === 3 && roundStr[1] === "风") {
+      return WIND.findIndex((x) => x === roundStr[0]) * 4 +
+             WIND.findIndex((x) => x === roundStr[2]);
+    }
+    
+    console.warn("Unknown round format:", roundStr);
+    return WIND.findIndex((x) => x === roundStr[0]) * 4 +
+           WIND.findIndex((x) => x === roundStr[2]);
+  };
+
   const show_cands = () => {
     const roundStr = document.getElementById("round").innerHTML;
-    const round =
-      WIND.findIndex((x) => x === roundStr[0]) * 4 +
-      WIND.findIndex((x) => x === roundStr[2]);
+    const round = parseRound(roundStr);
     document.getElementById("review-log").innerHTML = `CHAGA Reviewer [Step ${
       window.__ri
     }] [Load ${window.__reviews_seats.map(fmtLoad).join(" ")}]`;
@@ -145,9 +167,8 @@
     .at(-1);
   const seat = +document.getElementById("view").value;
   const roundStr = document.getElementById("round").innerHTML;
-  const round =
-    WIND.findIndex((x) => x === roundStr[0]) * 4 +
-    WIND.findIndex((x) => x === roundStr[2]);
+  console.log("roundStr:", roundStr, "length: ", roundStr.length);
+  const round = parseRound(roundStr);
   const initialSeat = O2S[0][S2O[round][seat]];
   for (let is = 0; is <= 3; is++) {
     if (window.__reviews_seats[is]) continue;
